@@ -21,6 +21,7 @@ package com.kyledahlin.discord.server
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import com.kyledahlin.discord.server.EnvironmentKeys.honkbotTokenEnvKey
 
 suspend fun main() {
     val loader = Thread.currentThread().contextClassLoader
@@ -30,6 +31,9 @@ suspend fun main() {
         .build()
 
     FirebaseApp.initializeApp(options)
-    HonkbotClient(System.getenv(EnvionmentKeys.honkbotTokenEnvKey)!!)
-        .start()
+    val di = DaggerHonkbotComponent
+        .builder()
+        .discordToken(System.getenv(honkbotTokenEnvKey)!!)
+        .build()
+    di.client().start()
 }

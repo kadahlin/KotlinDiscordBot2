@@ -16,10 +16,9 @@
  * /
  */
 
-package com.kyledahlin.discord.commands.rps
+package com.kyledahlin.discord.features.rps
 
-import com.google.firebase.cloud.FirestoreClient
-import com.kyledahlin.discord.commands.HonkbotFeature
+import com.kyledahlin.discord.features.HonkbotFeature
 import com.kyledahlin.discord.server.HonkbotLogger
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.Snowflake
@@ -29,16 +28,18 @@ import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.behavior.interaction.updateEphemeralMessage
 import dev.kord.core.behavior.interaction.updatePublicMessage
 import dev.kord.core.entity.interaction.ButtonInteraction
-import dev.kord.core.event.interaction.ApplicationCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.GuildUserCommandInteractionCreateEvent
 import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.actionRow
 import dev.kord.rest.service.RestClient
 import java.util.*
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class RockPaperScissorsFeature(
-    private val storage: RockPaperScissorsStorage = RockPaperScissorsStorage(FirestoreClient.getFirestore())
+@Singleton
+class RockPaperScissorsFeature @Inject constructor(
+    private val storage: RockPaperScissorsStorage
 ) : HonkbotFeature() {
 
     companion object {
@@ -55,8 +56,8 @@ class RockPaperScissorsFeature(
     private val ongoingGames = mutableMapOf<String, RpsGameState>()
 
     context(HonkbotLogger)
-    suspend fun onInteraction(event: ApplicationCommandInteractionCreateEvent) {
-        if (event.interaction.invokedCommandName != COMMAND_NAME || event !is GuildUserCommandInteractionCreateEvent) return
+    override suspend fun onGuildUserCommand(event: GuildUserCommandInteractionCreateEvent) {
+        if (event.interaction.invokedCommandName != COMMAND_NAME) return
         val response = event.interaction.deferEphemeralResponse()
         val user = event.interaction.user
         val target = event.interaction.target.asMember(event.interaction.guildId)
@@ -72,8 +73,7 @@ class RockPaperScissorsFeature(
             )
         if (user.id == target.id) {
             response.respond { content = "Can not challenge yourself (you would lose)" }
-        }
-        else if (event.interaction.getTarget().isBot) {
+        } else if (event.interaction.getTarget().isBot) {
             response.respond { content = "Can not challenge a bot (you would lose)" }
         } else {
             response.respond {
@@ -95,8 +95,8 @@ class RockPaperScissorsFeature(
         }
     }
 
-    context (HonkbotLogger)
-    suspend fun onButtonInteraction(event: ButtonInteractionCreateEvent) {
+    context(HonkbotLogger)
+    override suspend fun onButtonInteraction(event: ButtonInteractionCreateEvent) {
         if (!event.interaction.componentId.startsWith("rps")) return
         val rpsData = getGameDataFromButton(event.interaction)
         if (rpsData == null) {

@@ -16,15 +16,17 @@
  * /
  */
 
-package com.kyledahlin.discord.commands.rps
+package com.kyledahlin.discord.features.rps
 
 import com.google.cloud.firestore.Firestore
 import com.kyledahlin.discord.server.HonkbotLogger
 import dev.kord.common.entity.Snowflake
 import java.util.*
 import javax.inject.Inject
-import com.kyledahlin.discord.commands.rps.RpsStorageKeys as keys
+import javax.inject.Singleton
+import com.kyledahlin.discord.features.rps.RpsStorageKeys as keys
 
+@Singleton
 class RockPaperScissorsStorage @Inject constructor(
     firestore: Firestore,
 ) {

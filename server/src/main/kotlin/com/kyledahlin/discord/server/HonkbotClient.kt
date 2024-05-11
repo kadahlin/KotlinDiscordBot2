@@ -18,40 +18,54 @@
 
 package com.kyledahlin.discord.server
 
-import com.kyledahlin.discord.commands.rps.RockPaperScissorsFeature
+import com.kyledahlin.discord.features.HonkbotFeature
+import com.kyledahlin.discord.server.EnvironmentKeys.honkbotTokenEnvKey
 import dev.kord.core.Kord
+import dev.kord.core.entity.effectiveName
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.guild.GuildCreateEvent
-import dev.kord.core.event.interaction.ApplicationCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
+import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.GuildUserCommandInteractionCreateEvent
 import dev.kord.core.on
+import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 
-class HonkbotClient(private val token: String) {
-    lateinit var client: Kord
-    val logger = HonkbotLogger()
+@Singleton
+class HonkbotClient @Inject constructor(
+    @Named(honkbotTokenEnvKey) private val token: String,
+    private val logger: HonkbotLogger,
+    private val features: Set<@JvmSuppressWildcards HonkbotFeature>
+) {
+    private lateinit var client: Kord
 
     suspend fun start() = with(logger) {
         client = Kord(token)
 
-        val rps = RockPaperScissorsFeature()
-
-        client.on<ReadyEvent> {
-            debug { "ready event for [${guilds.size}] guilds" }
-        }
-        client.on<ApplicationCommandInteractionCreateEvent> {
-            rps.onInteraction(this)
-        }
-        client.on<GuildCreateEvent> {
-            deleteLegacyCommands()
-            rps.getGuildUserCommands().forEach { name ->
-                client.createGuildUserCommand(guild.id, name)
+        with(client) {
+            on<ReadyEvent> {
+                debug { "ready event for [${guilds.size}] guilds as [${this.self.effectiveName}]" }
             }
+            on<GuildUserCommandInteractionCreateEvent> {
+                features.forEach { it.onGuildUserCommand(this) }
+            }
+            on<GuildCreateEvent> {
+                deleteLegacyCommands()
+                features.flatMap { it.getGuildUserCommands() }.forEach { name ->
+                    client.createGuildUserCommand(guild.id, name)
+                }
+            }
+            on<ButtonInteractionCreateEvent> {
+                trace { "button event with id [${interaction.componentId}]" }
+                features.forEach { it.onButtonInteraction(this) }
+            }
+            on<GuildChatInputCommandInteractionCreateEvent> {
+                trace { "guild chat input in [${interaction.guildId}] with id [${interaction.invokedCommandName}]" }
+                features.forEach { it.onGuildChatInteraction(this) }
+            }
+            login {}
         }
-        client.on<ButtonInteractionCreateEvent> {
-            trace { "button event with id [${interaction.componentId}]" }
-            rps.onButtonInteraction(this)
-        }
-        client.login {}
     }
 
     /**

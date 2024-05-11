@@ -18,7 +18,7 @@
 
 package com.kyledahlin.discord.server
 
-object EnvionmentKeys {
+object EnvironmentKeys {
     const val honkbotTokenEnvKey = "HONKBOT_TOKEN"
     const val honkbotLogLevelEnvKey = "HONKBOT_LOG_LEVEL"
     const val honkbotAccountIdEnvKey = "HONKBOT_ACCOUNT_ID"

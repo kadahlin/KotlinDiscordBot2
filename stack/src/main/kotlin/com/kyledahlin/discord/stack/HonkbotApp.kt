@@ -18,8 +18,8 @@
 
 package com.kyledahlin.discord.stack
 
-import com.kyledahlin.discord.server.EnvionmentKeys.honkbotAccountIdEnvKey
-import com.kyledahlin.discord.server.EnvionmentKeys.honkbotRegionEnvKey
+import com.kyledahlin.discord.server.EnvironmentKeys.honkbotAccountIdEnvKey
+import com.kyledahlin.discord.server.EnvironmentKeys.honkbotRegionEnvKey
 import software.amazon.awscdk.App
 import software.amazon.awscdk.Environment
 import software.amazon.awscdk.StackProps

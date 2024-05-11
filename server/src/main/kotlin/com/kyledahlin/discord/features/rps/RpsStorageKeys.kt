@@ -16,13 +16,12 @@
  * /
  */
 
-package com.kyledahlin.discord.commands
+package com.kyledahlin.discord.features.rps
 
-abstract class HonkbotFeature {
-    abstract val id: String
-
-    /**
-     * Get all user context command names associated with this feature
-     */
-    open fun getGuildUserCommands(): Set<String> = emptySet()
+object RpsStorageKeys {
+    const val wasDraw: String = "wasDraw"
+    const val winner: String = "winner"
+    const val playerOne = "playerOne"
+    const val playerTwo = "playerTwo"
+    const val guildId = "guildId"
 }

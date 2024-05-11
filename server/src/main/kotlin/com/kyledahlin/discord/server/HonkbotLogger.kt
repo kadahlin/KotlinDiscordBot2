@@ -19,8 +19,11 @@
 package com.kyledahlin.discord.server
 
 import org.slf4j.LoggerFactory
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class HonkbotLogger {
+@Singleton
+class HonkbotLogger @Inject constructor() {
     private val logger = LoggerFactory.getLogger("com.kyledahlin.discord")
 
     fun trace(message: () -> String) {
